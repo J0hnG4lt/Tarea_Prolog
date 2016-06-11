@@ -47,7 +47,7 @@ numeroHijos(nodo(_, Aristas), NumeroHijos) :-
 extraerN_Elem(0, [X | _], X) :- !.
 extraerN_Elem(Numero, [_ | XS], R) :- 
     Numero_2 is Numero - 1,
-    extraerN_Elem(Numero_2, XS, R).
+    extraerN_Elem(Numero_2, XS, R), !.
 
 
 
@@ -70,15 +70,22 @@ construirListaNiveles(CantidadNiveles, Resultado) :-
     construirListaNiveles(CantidadNiveles2, ListaParesNumNivelVSNumNodosVistos),
     append(ListaParesNumNivelVSNumNodosVistos, [[CantidadNiveles2, 0]], Resultado),!.
 
+
 corresponden(_, nodo(_, []), NivelesPorVer, NivelesVistos, NivelesPorVer, NivelesVistos) :- !.
-corresponden(esq(Niveles), nodo(E, [arista(_, Hijo) | Aristas]), [ [NumNivel, NumNodosVistosEnNivel] | NivelesPorVer], NivelesVistos, NivPV,NivV) :-
+corresponden(esq(Niveles), nodo(E, [arista(_, Hijo) | Aristas]), [ [NumNivel, NumNodosVistosEnNivel] | NivelesPorVer], NivelesVistos, ResNiPV,NivV) :-
     NumNodosVistosEnNivelNuevo is NumNodosVistosEnNivel +1,
     extraerN_Elem(NumNivel, Niveles, ListaNodosNivelN),
-    extraerN_Elem(NumNodosVistosEnNivelNuevo, ListaNodosNivelN, NumHijosNodoActualEsqueleto),
+    extraerN_Elem(NumNodosVistosEnNivel, ListaNodosNivelN, NumHijosNodoActualEsqueleto),
     numeroHijos(Hijo, NumeroAristasHijo),
-    NumeroAristasHijo = NumHijosNodoActualEsqueleto,
-    corresponden(esq(Niveles), Hijo, NivelesPorVer, [[NumNivel, NumNodosVistosEnNivelNuevo] | NivelesVistos], NivPV_2, NivV_2),
-    corresponden(esq(Niveles), nodo(E, Aristas), NivPV_2, NivV_2, NivPV, NivV).
+    NumeroAristasHijo =:= NumHijosNodoActualEsqueleto,
+    corresponden(esq(Niveles), Hijo, NivelesPorVer, [[NumNivel, NumNodosVistosEnNivelNuevo] | NivelesVistos], NivPV_2, [C|NivV_2]),
+    (
+    ( corresponden(esq(Niveles), nodo(E, Aristas), [C|NivPV_2], NivV_2, NivPV, [D|NivV]),
+    ResNiPV=[D|NivPV])
+    ;
+    ( corresponden(esq(Niveles), nodo(E, Aristas), [C|NivPV_2], NivV_2, NivPV, NivV),
+    ResNiPV=NivPV)),!.
+    
 
 numeroElementosTotalesEsq([], 0) :- !.
 numeroElementosTotalesEsq([Nivel | Niveles], Cantidad) :-
@@ -96,7 +103,6 @@ esqueleto(CantidadTotalNodos, NumeroMaxHijosPorNodo, Esqueleto) :-
 esqEtiquetables(R, N, ListaArboles) :-
     esqueleto(N, R, Esqueleto),
     findall(Arbol, etiquetamiento(Esqueleto, Arbol), ListaArboles).
-
 
 
 
