@@ -225,6 +225,42 @@ esqueleto(N,R,esq(Niveles)) :-
     gen_niveles(N,R,1,Niveles).
 
 
+%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%
+
+gen_niveles2(_, _, 0, []) :- !.
+gen_niveles2(0, _, _, []) :- !.
+gen_niveles2(NodosDisp, Aridad, 1, [Nivel | Niveles]) :-
+    NodosDisp >= 0,
+    crearNivel(NodosDisp, Aridad, 1, NumElemsProxNiv, Nivel),
+    NodosDisp2 is NodosDisp -1,!,
+    genInteger(NumElemsProxNiv,NumElemsProxNiv2),
+    gen_niveles2(NodosDisp2, Aridad, NumElemsProxNiv2, Niveles).
+gen_niveles2(NodosDisp, Aridad, TamNivel, [Nivel]) :-
+    NodosDisp < TamNivel,
+    crearNivel(NodosDisp, Aridad, NodosDisp, _, Nivel),!.
+gen_niveles2(NodosDisp, Aridad, TamNivel, [Nivel|Niveles]) :-
+    NodosDisp >= TamNivel,
+    crearNivel(NodosDisp, Aridad, TamNivel, NumElemsProxNiv, Nivel),
+    NodosDisp2 is NodosDisp -TamNivel,
+    genInteger(NumElemsProxNiv,NumElemsProxNiv2),
+    gen_niveles2(NodosDisp2, Aridad, NumElemsProxNiv2, Niveles),!.
+
+
+
+genInteger(Y,X) :-
+    range(X,0,Y).
+
+range(High, Low, High) :- Low >= 0.
+range(Out,Low,High) :- NewHigh is High-1, Low < NewHigh, range(Out, Low, NewHigh).
+
+esqueleto2(N,R,esq(Niveles)) :-
+    gen_niveles2(N,R,1,Niveles).
+
+
+
+
 esqEtiquetables(R, N, ListaArboles) :-
     esqueleto(N, R, Esqueleto),
     findall(Arbol, etiquetamiento(Esqueleto, Arbol), ListaArboles).
