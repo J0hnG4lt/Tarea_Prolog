@@ -93,11 +93,117 @@ numeroElementosTotalesEsq([Nivel | Niveles], Cantidad) :-
     numeroElementosTotalesEsq(Niveles, Cantidad2),
     Cantidad is NumeroNodos +Cantidad2.
 
+/*
 esqueleto(0, NumeroMaxHijosPorNodo, esq([])) :- NumeroMaxHijosPorNodo > -1.
 esqueleto(CantidadTotalNodos, NumeroMaxHijosPorNodo, Esqueleto) :-
     extraerNiveles(Esqueleto, Niveles),
     numeroElementosTotalesEsq(Niveles, CantidadTotalNodos),
     verificarNiveles(Niveles, NumeroMaxHijosPorNodo).
+*/
+
+/*
+generar_nivel(_,_,0,_).
+generar_nivel(0, Aridad, NumElemsAPoner, [0 | Elems]) :- 
+    NumElemsAPoner > 0,
+    NumElemsAPoner2 is NumElemsAPoner -1,
+    generar_nivel(0, Aridad, NumElemsAPoner2, Elems).
+generar_nivel(NumNodosDisp,Aridad, NumElemsAPoner,[X | Elems]) :-
+    NumElemsAPoner > 0,
+    NumElemsAPoner2 is NumElemsAPoner -1,
+    ((Aridad =< NumNodosDisp,
+      X = Aridad,
+      NumNodosDisp2 is NumNodosDisp - Aridad)
+      ;
+     (Aridad > NumNodosDisp,
+      X = NumNodosDisp,
+      NumNodosDisp2 is 0)
+    ),
+    generar_nivel(NumNodosDisp2, Aridad, NumElemsAPoner2, Elems).
+
+
+sumar_nivel([], 0).
+sumar_nivel([X|Nivel],NumElems) :-
+    sumar_nivel(Nivel, NumElems2),
+    NumElems is NumElems2 + X.
+
+generar_niveles(NumTotalNodosDisponibles, Aridad, NumElemsAPoner, [Nivel]) :-
+    NumElemsAPoner > NumTotalNodosDisponibles,
+    generar_nivel(NumTotalNodosDisponibles,Aridad, NumElemsAPoner, Nivel).
+
+generar_niveles(NumTotalNodosDisponibles, Aridad, NumElemsAPoner, [[X]|Niveles]) :-
+    NumElemsAPoner = 1,
+    NumElemsAPoner =< NumTotalNodosDisponibles,
+    ((Aridad < NumTotalNodosDisponibles,
+      X is Aridad,
+      NodosRestantes is NumTotalNodosDisponibles - Aridad)
+      ;
+      (Aridad >= NumTotalNodosDisponibles,
+      X is NumTotalNodosDisponibles,
+      NodosRestantes is 0
+    )),
+    generar_niveles(NodosRestantes, Aridad, X, Niveles).
+
+generar_niveles(NumTotalNodosDisponibles, Aridad, NumElemsAPoner, Niveles) :-
+    NumElemsAPoner > 1,
+    NumElemsAPoner =< NumTotalNodosDisponibles,
+    generar_nivel(NumTotalNodosDisponibles,Aridad, NumElemsAPoner, Nivel),
+    sumar_nivel(Nivel, NumNodosUsados),
+    NodosRestantes2 is NumTotalNodosDisponibles -NumNodosUsados,
+    ((
+      NodosRestantes2 >= 0,
+      NodosRestantes = NodosRestantes2)
+      ;
+     (NodosRestantes2 < 0,
+      NodosRestantes = 0)
+    ),
+    generar_niveles(NodosRestantes, Aridad, NumNodosUsados, Niveles2),
+    append(Niveles2, Nivel, Niveles).
+*/
+
+
+gen_nivel(_, _, 0, 0,[]).
+gen_nivel(NodosDisp, Aridad, TamNivel, 0,[0|Nivel2]) :-
+    NodosDisp =< Aridad,
+    NodosDisp < 0,
+    TamNivel2 is TamNivel -1,
+    gen_nivel(0, Aridad, TamNivel2,_, Nivel2).
+gen_nivel(NodosDisp, Aridad, TamNivel, NumElemsProxNiv,[NodosDisp|Nivel2]) :-
+    NodosDisp =< Aridad,
+    NodosDisp >= 0,
+    TamNivel2 is TamNivel -1,
+    gen_nivel(0, Aridad, TamNivel2, Num, Nivel2),
+    NumElemsProxNiv is Num + NodosDisp.
+gen_nivel(NodosDisp, Aridad, TamNivel, NumElemsProxNiv,[Aridad|Nivel2]) :-
+    NodosDisp > Aridad,
+    NodosDisp2 is NodosDisp - Aridad,
+    TamNivel2 is TamNivel -1,
+    gen_nivel(NodosDisp2, Aridad, TamNivel2, Num, Nivel2),
+    NumElemsProxNiv is Num + Aridad.
+
+
+crearNivel(NodosDisp, Aridad, TamNivel, NumElemsProxNiv, Nivel) :-
+    NodosDisp2 is NodosDisp - TamNivel,
+    gen_nivel(NodosDisp2, Aridad, TamNivel, NumElemsProxNiv, Nivel).
+
+
+gen_niveles(_, _, 0, []).
+gen_niveles(0, _, _, []).
+gen_niveles(NodosDisp, Aridad, 1, [Nivel | Niveles]) :-
+    NodosDisp >= 0,
+    crearNivel(NodosDisp, Aridad, 1, NumElemsProxNiv, Nivel),
+    NodosDisp2 is NodosDisp -1,
+    gen_niveles(NodosDisp2, Aridad, NumElemsProxNiv, Niveles), !.
+gen_niveles(NodosDisp, Aridad, TamNivel, [Nivel]) :-
+    NodosDisp < TamNivel,
+    crearNivel(NodosDisp, Aridad, NodosDisp, _, Nivel), !.
+gen_niveles(NodosDisp, Aridad, TamNivel, [Nivel|Niveles]) :-
+    NodosDisp >= TamNivel,
+    crearNivel(NodosDisp, Aridad, TamNivel, NumElemsProxNiv, Nivel),
+    NodosDisp2 is NodosDisp -TamNivel,
+    gen_niveles(NodosDisp2, Aridad, NumElemsProxNiv, Niveles),!.
+
+esqueleto(N,R,esq(Niveles)) :-
+    gen_niveles(N,R,1,Niveles).
 
 
 esqEtiquetables(R, N, ListaArboles) :-
