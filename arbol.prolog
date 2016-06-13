@@ -10,6 +10,25 @@ extraerEtiquetaDeNodo(nodo(R, _), R).
 
 extraerEtiquetaDeArista(arista(EA, _), EA).
 
+
+
+listaEtiquetas(nodo(E,[]), [E]).
+listaEtiquetas(nodo(E,[arista(_, Nodo) | Aristas]), L):-
+    listaEtiquetas(Nodo, L2),
+    listaEtiquetas(nodo(E,Aristas), L3),
+    append(L2,L3,L), !.
+
+noHayRepetidas([]).
+noHayRepetidas([X|XS]) :-
+    \+ member(X,XS),
+    noHayRepetidas(XS).
+
+
+etiquetasUnicas(Arbol) :-
+    listaEtiquetas(Arbol, Lista),
+    noHayRepetidas(Lista).
+
+
 bienEtiquetado(nodo(_, [])) :-!.
 bienEtiquetado(nodo(EtiquetaNodoPadre, Aristas)) :-
     cabeza(Aristas, Arista),
