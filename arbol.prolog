@@ -309,6 +309,8 @@ esqueleto3(N,R,esq(Niveles)) :-
 */
 
 
+
+
 esqEtiquetables(R, N, ListaArboles) :-
     esqueleto(N, R, Esqueleto),
     findall(Arbol, etiquetamiento(Esqueleto, Arbol), ListaArboles).
