@@ -42,7 +42,7 @@ bienEtiquetado(nodo(EtiquetaNodoPadre, Aristas)) :-
     bienEtiquetado(nodo(EtiquetaNodoPadre, RestoAristas)).
 
 longitud([], 0).
-longitud([_ | XS], L) :- longitud(XS, L2), L is L2 + 1.
+longitud([_ | XS], L) :- longitud(XS, L2), L is L2 + 1,!.
 %longitud([_ | XS], L) :- L2 is L + 1, longitud(XS, L2).
 
 extraerNiveles(esq(Niveles), Niveles).
@@ -182,17 +182,20 @@ generar_niveles(NumTotalNodosDisponibles, Aridad, NumElemsAPoner, Niveles) :-
 
 gen_nivel(_, _, 0, 0,[]).
 gen_nivel(NodosDisp, Aridad, TamNivel, 0,[0|Nivel2]) :-
+    TamNivel > 0,
     NodosDisp =< Aridad,
     NodosDisp < 0,
     TamNivel2 is TamNivel -1,
     gen_nivel(0, Aridad, TamNivel2,_, Nivel2).
 gen_nivel(NodosDisp, Aridad, TamNivel, NumElemsProxNiv,[NodosDisp|Nivel2]) :-
+    TamNivel > 0,
     NodosDisp =< Aridad,
     NodosDisp >= 0,
     TamNivel2 is TamNivel -1,
     gen_nivel(0, Aridad, TamNivel2, Num, Nivel2),
     NumElemsProxNiv is Num + NodosDisp.
 gen_nivel(NodosDisp, Aridad, TamNivel, NumElemsProxNiv,[Aridad|Nivel2]) :-
+    TamNivel > 0,
     NodosDisp > Aridad,
     NodosDisp2 is NodosDisp - Aridad,
     TamNivel2 is TamNivel -1,
@@ -233,10 +236,10 @@ gen_niveles2(_, _, 0, []) :- !.
 gen_niveles2(0, _, _, []) :- !.
 gen_niveles2(NodosDisp, Aridad, 1, [Nivel | Niveles]) :-
     NodosDisp >= 0,
-    crearNivel(NodosDisp, Aridad, 1, NumElemsProxNiv, Nivel),
-    NodosDisp2 is NodosDisp -1,!,
-    genInteger(NumElemsProxNiv,NumElemsProxNiv2),
-    gen_niveles2(NodosDisp2, Aridad, NumElemsProxNiv2, Niveles).
+    genInteger(Aridad,Aridad2),
+    crearNivel(NodosDisp, Aridad2, 1, NumElemsProxNiv, Nivel),
+    NodosDisp2 is NodosDisp -1,
+    gen_niveles2(NodosDisp2, Aridad, NumElemsProxNiv, Niveles).
 gen_niveles2(NodosDisp, Aridad, TamNivel, [Nivel]) :-
     NodosDisp < TamNivel,
     crearNivel(NodosDisp, Aridad, NodosDisp, _, Nivel),!.
@@ -245,7 +248,7 @@ gen_niveles2(NodosDisp, Aridad, TamNivel, [Nivel|Niveles]) :-
     crearNivel(NodosDisp, Aridad, TamNivel, NumElemsProxNiv, Nivel),
     NodosDisp2 is NodosDisp -TamNivel,
     genInteger(NumElemsProxNiv,NumElemsProxNiv2),
-    gen_niveles2(NodosDisp2, Aridad, NumElemsProxNiv2, Niveles),!.
+    gen_niveles2(NodosDisp2, Aridad, NumElemsProxNiv2, Niveles).
 
 
 
@@ -259,6 +262,67 @@ esqueleto2(N,R,esq(Niveles)) :-
     gen_niveles2(N,R,1,Niveles).
 
 
+esBuenEsqueleto(esq(Nivel)) :-
+    buenEsqueleto(Nivel,1).
+
+
+buenEsqueleto([], 0).
+buenEsqueleto([[X]|N], 1) :-
+    longitud(R,1),
+    buenEsqueleto(N, X),!.
+buenEsqueleto([A|N], X) :-
+    longitud(A,Len),
+    X=:=Len,
+    sumar_nivel(A, Y),
+    buenEsqueleto(N, Y),!.
+
+sumar_nivel([], 0).
+sumar_nivel([X|Nivel],NumElems) :-
+    sumar_nivel(Nivel, NumElems2),
+    NumElems is NumElems2 + X.
+
+
+generarEsqueletos(N,R,L) :- 
+    setof(X,(esqueleto2(N,R,X)),L2),
+    buenosEsqueletos(L2, L), !.
+
+
+buenosEsqueletos([], []).
+buenosEsqueletos([Esq|Esqueletos],Otros) :-
+    \+ esBuenEsqueleto(Esq),
+    buenosEsqueletos(Esqueletos, Otros).
+buenosEsqueletos([Esq|Esqueletos],[Esq | Otros]) :-
+    esBuenEsqueleto(Esq),
+    buenosEsqueletos(Esqueletos, Otros).
+
+/*
+gen_niveles3(_, _, 0, []) :- !.
+gen_niveles3(0, _, _, []) :- !.
+gen_niveles3(N,R,1,[[X]|Niveles]):-
+    N > 0,
+    genInteger(R,X),
+    N2 is N-X,
+    gen_niveles(N2,R,X,Niveles).
+gen_niveles3(N,R,M,[Nivel]):-
+    N < M,
+    crearNivel(N, R, M, _, Nivel),!.
+gen_niveles3(N,R,M,[Nivel|Niveles]):-
+    N >= M,
+    N2 is R*M,
+    genInteger(N2,X),
+    X > M,
+    crearNivel(X, R, M, M2, Nivel),
+    N3 is N -X,
+    N3 > 0,
+    N4 is N - M + N3,
+    gen_niveles3(N4,R,M2,Niveles).
+
+
+
+
+esqueleto3(N,R,esq(Niveles)) :-
+    gen_niveles3(N,R,1,Niveles).
+*/
 
 
 esqEtiquetables(R, N, ListaArboles) :-
