@@ -208,24 +208,6 @@ crearNivel(NodosDisp, Aridad, TamNivel, NumElemsProxNiv, Nivel) :-
     gen_nivel(NodosDisp2, Aridad, TamNivel, NumElemsProxNiv, Nivel).
 
 
-gen_niveles(_, _, 0, []).
-gen_niveles(0, _, _, []).
-gen_niveles(NodosDisp, Aridad, 1, [Nivel | Niveles]) :-
-    NodosDisp >= 0,
-    crearNivel(NodosDisp, Aridad, 1, NumElemsProxNiv, Nivel),
-    NodosDisp2 is NodosDisp -1,
-    gen_niveles(NodosDisp2, Aridad, NumElemsProxNiv, Niveles), !.
-gen_niveles(NodosDisp, Aridad, TamNivel, [Nivel]) :-
-    NodosDisp < TamNivel,
-    crearNivel(NodosDisp, Aridad, NodosDisp, _, Nivel), !.
-gen_niveles(NodosDisp, Aridad, TamNivel, [Nivel|Niveles]) :-
-    NodosDisp >= TamNivel,
-    crearNivel(NodosDisp, Aridad, TamNivel, NumElemsProxNiv, Nivel),
-    NodosDisp2 is NodosDisp -TamNivel,
-    gen_niveles(NodosDisp2, Aridad, NumElemsProxNiv, Niveles),!.
-
-esqueleto(N,R,esq(Niveles)) :-
-    gen_niveles(N,R,1,Niveles).
 
 
 %%%%%%%%%%%%%%%%
@@ -250,21 +232,22 @@ gen_niveles2(NodosDisp, Aridad, TamNivel, [Nivel|Niveles]) :-
     genInteger(NumElemsProxNiv,NumElemsProxNiv2),
     gen_niveles2(NodosDisp2, Aridad, NumElemsProxNiv2, Niveles).
 
-
-
+/*
 genInteger(Y,X) :-
     range(X,0,Y).
 
 range(High, Low, High) :- Low >= 0.
 range(Out,Low,High) :- NewHigh is High-1, Low < NewHigh, range(Out, Low, NewHigh).
+*/
 
-esqueleto2(N,R,esq(Niveles)) :-
-    gen_niveles2(N,R,1,Niveles).
+genInteger(Y,Y).
+genInteger(Y,X) :-
+    Y2 is Y-1, 0 < Y2, genInteger2(Y2,X).
+
 
 
 esBuenEsqueleto(esq(Nivel)) :-
     buenEsqueleto(Nivel,1).
-
 
 buenEsqueleto([], 0).
 buenEsqueleto([[X]|N], 1) :-
@@ -282,11 +265,6 @@ sumar_nivel([X|Nivel],NumElems) :-
     NumElems is NumElems2 + X.
 
 
-generarEsqueletos(N,R,E) :- 
-    setof(X,(esqueleto2(N,R,X)),L2),
-    buenosEsqueletos(L2, L), !,
-    member(E,L).
-
 
 buenosEsqueletos([], []).
 buenosEsqueletos([Esq|Esqueletos],Otros) :-
@@ -295,6 +273,11 @@ buenosEsqueletos([Esq|Esqueletos],Otros) :-
 buenosEsqueletos([Esq|Esqueletos],[Esq | Otros]) :-
     esBuenEsqueleto(Esq),
     buenosEsqueletos(Esqueletos, Otros).
+
+esqueleto(N,R,E) :- 
+    setof(X,(esqueleto2(N,R,X)),L2),
+    buenosEsqueletos(L2, L), !,
+    member(E,L).
 
 /*
 gen_niveles3(_, _, 0, []) :- !.
