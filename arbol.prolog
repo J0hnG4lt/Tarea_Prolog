@@ -282,9 +282,10 @@ sumar_nivel([X|Nivel],NumElems) :-
     NumElems is NumElems2 + X.
 
 
-generarEsqueletos(N,R,L) :- 
+generarEsqueletos(N,R,E) :- 
     setof(X,(esqueleto2(N,R,X)),L2),
-    buenosEsqueletos(L2, L), !.
+    buenosEsqueletos(L2, L), !,
+    member(E,L).
 
 
 buenosEsqueletos([], []).
