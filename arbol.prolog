@@ -23,8 +23,17 @@ noHayRepetidas([X|XS]) :-
     \+ member(X,XS),
     noHayRepetidas(XS).
 
+listaEtiquetasAristas(nodo(E,[]), []).
+listaEtiquetasAristas(nodo(E2,[arista(E, Nodo) | Aristas]), [E|L]):-
+    listaEtiquetasAristas(Nodo, L2),
+    listaEtiquetasAristas(nodo(E2,Aristas), L3),
+    append(L2,L3,L), !.
 
-etiquetasUnicas(Arbol) :-
+etiquetasUnicasAristas(Arbol) :-
+    listaEtiquetasAristas(Arbol, Lista),
+    noHayRepetidas(Lista).
+
+etiquetasUnicasNodos(Arbol) :-
     listaEtiquetas(Arbol, Lista),
     noHayRepetidas(Lista).
 
@@ -69,7 +78,7 @@ extraerN_Elem(Numero, [_ | XS], R) :-
     extraerN_Elem(Numero_2, XS, R), !.
 
 
-
+/*
 etiquetamiento(Esqueleto, Arbol) :-
     bienEtiquetado(Arbol),
     numeroNiveles(Esqueleto, NumeroNiveles),
@@ -78,7 +87,7 @@ etiquetamiento(Esqueleto, Arbol) :-
     extraerNiveles(Esqueleto, Niveles),
     extraerN_Elem(0, Niveles, [NumHijosRaiz]),
     corresponden(Esqueleto, Arbol, RestoNiveles, [[0, 1]], _, _).
-
+*/
 
 numeroNiveles(esq(Niveles), NumeroNiveles) :-
     longitud(Niveles, NumeroNiveles).
@@ -274,6 +283,10 @@ buenosEsqueletos([Esq|Esqueletos],[Esq | Otros]) :-
     esBuenEsqueleto(Esq),
     buenosEsqueletos(Esqueletos, Otros).
 
+
+esqueleto2(N,R,esq(Niveles)) :-
+    gen_niveles2(N,R,1,Niveles).
+
 esqueleto(N,R,E) :- 
     setof(X,(esqueleto2(N,R,X)),L2),
     buenosEsqueletos(L2, L), !,
@@ -346,16 +359,45 @@ construirArboles(esq([[X]|Niveles]), Arbol) :-
     obtenerCantNodos([[X]|Niveles], N),
     generarListaEtiquetas(N, Etiquetas),!,
     permutation(Etiquetas,Etiquetamiento),
-    genArbol(esq([[X]|Niveles]), Arbol, 1,X,Etiquetamiento,_).
+    genArbol(esq([[X]|Niveles]), Arbol2, 1,X,Etiquetamiento,_),
+    calcularAristas(Arbol2, Arbol).
+
+
+etiquetamiento(Esqueleto, Arbol) :-
+    construirArboles(Esqueleto, Arbol),
+    etiquetasUnicasAristas(Arbol).
+
+
+calcularAristas(nodo(E,[]),nodo(E,[])).
+calcularAristas(nodo(E1,[arista(_,Nodo)|Aristas]), nodo(E1, [arista(E2,Nodo2)|Aristas2])) :-
+    extraerEtiquetaDeNodo(Nodo, E3),
+    E2 is abs(E1-E3),
+    calcularAristas(Nodo, Nodo2),
+    calcularAristas(nodo(E1, Aristas), Nodo3),
+    extraerAristas(Nodo3, Aristas2).
+
 
 extraerAristas(nodo(_, Aristas), Aristas).
 
 %%%
-
-esqEtiquetables(R, N, ListaArboles) :-
+/*
+esqEtiquetables(R, N) :-
     esqueleto(N, R, Esqueleto),
-    findall(Arbol, etiquetamiento(Esqueleto, Arbol), ListaArboles).
+    findall(Esqueleto, etiquetamiento(Esqueleto, Arbol), ListaArboles),
+    longitud(ListaArboles, CantArboles),
+    CantArboles > 0.
+*/
 
+esqEtiquetables(R, N) :-
+    findall(Esqueleto, esqueleto(N, R, Esqueleto), Esqueletos),
+    verificarEtiquetables(Esqueletos).
+
+verificarEtiquetables([]).
+verificarEtiquetables([Esqueleto|Esqueletos]) :-
+    findall(Esqueleto, etiquetamiento(Esqueleto, Arbol), ListaArboles),
+    longitud(ListaArboles, CantArboles),
+    CantArboles > 0,
+    verificarEtiquetables(Esqueletos).
 
 
 
