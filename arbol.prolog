@@ -300,12 +300,6 @@ longitud([_ | XS], L) :- longitud(XS, L2), L is L2 + 1,!.
 extraerNiveles(esq(Niveles), Niveles).
 
 
-
-
-
-
-
-
 extraerN_Elem(0, [X | _], X) :- !.
 extraerN_Elem(Numero, [_ | XS], R) :- 
     Numero_2 is Numero - 1,
