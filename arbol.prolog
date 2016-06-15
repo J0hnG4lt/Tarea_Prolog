@@ -208,6 +208,10 @@ construirArbol(esq([[X]|Niveles]), Arbol) :-
     genArbol(esq([[X]|Niveles]), Arbol, 1,X,Etiquetas,_).
 
 
+% Construyo lista de numeros distintos
+generarListaEtiquetas(N,L) :-
+    findall(X,(genInteger(N,X)),L).
+
 % La salida es el segundo campo y el ultimo.
 % Dado un esqueleto, el numero de nivel actual, numero de hijos y lista
 % de etiquetas, se genera un arbol junto con la lista de etiquetas sobrantes.
@@ -290,28 +294,16 @@ extraerEtiquetaDeNodo(nodo(R, _), R).
 
 extraerEtiquetaDeArista(arista(EA, _), EA).
 
-
-
 longitud([], 0).
 longitud([_ | XS], L) :- longitud(XS, L2), L is L2 + 1,!.
-
 
 extraerNiveles(esq(Niveles), Niveles).
 
 
-verificarNiveles([], _) :- !.
-verificarNiveles([X | XS], NumeroMaxHijos) :-
-    verificarNumeroHijos(X, NumeroMaxHijos),
-    verificarNiveles(XS, NumeroMaxHijos).
-
-verificarNumeroHijos([], _) :- !.
-verificarNumeroHijos([X | XS], NumeroMaxHijos) :-
-    X =< NumeroMaxHijos,
-    verificarNumeroHijos(XS, NumeroMaxHijos).
 
 
-numeroHijos(nodo(_, Aristas), NumeroHijos) :- 
-    longitud(Aristas, NumeroHijos).
+
+
 
 
 extraerN_Elem(0, [X | _], X) :- !.
@@ -320,115 +312,6 @@ extraerN_Elem(Numero, [_ | XS], R) :-
     extraerN_Elem(Numero_2, XS, R), !.
 
 
-/*
-etiquetamiento(Esqueleto, Arbol) :-
-    bienEtiquetado(Arbol),
-    numeroNiveles(Esqueleto, NumeroNiveles),
-    construirListaNiveles(NumeroNiveles, [_ | RestoNiveles]),
-    numeroHijos(Arbol, NumHijosRaiz),
-    extraerNiveles(Esqueleto, Niveles),
-    extraerN_Elem(0, Niveles, [NumHijosRaiz]),
-    corresponden(Esqueleto, Arbol, RestoNiveles, [[0, 1]], _, _).
-*/
-
-numeroNiveles(esq(Niveles), NumeroNiveles) :-
-    longitud(Niveles, NumeroNiveles).
-
-construirListaNiveles(0, _) :- !.
-construirListaNiveles(CantidadNiveles, Resultado) :-
-    CantidadNiveles2 is CantidadNiveles -1,
-    construirListaNiveles(CantidadNiveles2, ListaParesNumNivelVSNumNodosVistos),
-    append(ListaParesNumNivelVSNumNodosVistos, [[CantidadNiveles2, 0]], Resultado),!.
-
-
-corresponden(_, nodo(_, []), NivelesPorVer, NivelesVistos, NivelesPorVer, NivelesVistos) :- !.
-corresponden(esq(Niveles), nodo(E, [arista(_, Hijo) | Aristas]), [ [NumNivel, NumNodosVistosEnNivel] | NivelesPorVer], NivelesVistos, ResNiPV,NivV) :-
-    NumNodosVistosEnNivelNuevo is NumNodosVistosEnNivel +1,
-    extraerN_Elem(NumNivel, Niveles, ListaNodosNivelN),
-    extraerN_Elem(NumNodosVistosEnNivel, ListaNodosNivelN, NumHijosNodoActualEsqueleto),
-    numeroHijos(Hijo, NumeroAristasHijo),
-    NumeroAristasHijo =:= NumHijosNodoActualEsqueleto,
-    corresponden(esq(Niveles), Hijo, NivelesPorVer, [[NumNivel, NumNodosVistosEnNivelNuevo] | NivelesVistos], NivPV_2, [C|NivV_2]),
-    (
-    ( corresponden(esq(Niveles), nodo(E, Aristas), [C|NivPV_2], NivV_2, NivPV, [D|NivV]),
-    ResNiPV=[D|NivPV])
-    ;
-    ( corresponden(esq(Niveles), nodo(E, Aristas), [C|NivPV_2], NivV_2, NivPV, NivV),
-    ResNiPV=NivPV)),!.
-    
-
-numeroElementosTotalesEsq([], 0) :- !.
-numeroElementosTotalesEsq([Nivel | Niveles], Cantidad) :-
-    longitud(Nivel, NumeroNodos),
-    numeroElementosTotalesEsq(Niveles, Cantidad2),
-    Cantidad is NumeroNodos +Cantidad2.
-
-/*
-esqueleto(0, NumeroMaxHijosPorNodo, esq([])) :- NumeroMaxHijosPorNodo > -1.
-esqueleto(CantidadTotalNodos, NumeroMaxHijosPorNodo, Esqueleto) :-
-    extraerNiveles(Esqueleto, Niveles),
-    numeroElementosTotalesEsq(Niveles, CantidadTotalNodos),
-    verificarNiveles(Niveles, NumeroMaxHijosPorNodo).
-*/
-
-/*
-generar_nivel(_,_,0,_).
-generar_nivel(0, Aridad, NumElemsAPoner, [0 | Elems]) :- 
-    NumElemsAPoner > 0,
-    NumElemsAPoner2 is NumElemsAPoner -1,
-    generar_nivel(0, Aridad, NumElemsAPoner2, Elems).
-generar_nivel(NumNodosDisp,Aridad, NumElemsAPoner,[X | Elems]) :-
-    NumElemsAPoner > 0,
-    NumElemsAPoner2 is NumElemsAPoner -1,
-    ((Aridad =< NumNodosDisp,
-      X = Aridad,
-      NumNodosDisp2 is NumNodosDisp - Aridad)
-      ;
-     (Aridad > NumNodosDisp,
-      X = NumNodosDisp,
-      NumNodosDisp2 is 0)
-    ),
-    generar_nivel(NumNodosDisp2, Aridad, NumElemsAPoner2, Elems).
-
-
-sumar_nivel([], 0).
-sumar_nivel([X|Nivel],NumElems) :-
-    sumar_nivel(Nivel, NumElems2),
-    NumElems is NumElems2 + X.
-
-generar_niveles(NumTotalNodosDisponibles, Aridad, NumElemsAPoner, [Nivel]) :-
-    NumElemsAPoner > NumTotalNodosDisponibles,
-    generar_nivel(NumTotalNodosDisponibles,Aridad, NumElemsAPoner, Nivel).
-
-generar_niveles(NumTotalNodosDisponibles, Aridad, NumElemsAPoner, [[X]|Niveles]) :-
-    NumElemsAPoner = 1,
-    NumElemsAPoner =< NumTotalNodosDisponibles,
-    ((Aridad < NumTotalNodosDisponibles,
-      X is Aridad,
-      NodosRestantes is NumTotalNodosDisponibles - Aridad)
-      ;
-      (Aridad >= NumTotalNodosDisponibles,
-      X is NumTotalNodosDisponibles,
-      NodosRestantes is 0
-    )),
-    generar_niveles(NodosRestantes, Aridad, X, Niveles).
-
-generar_niveles(NumTotalNodosDisponibles, Aridad, NumElemsAPoner, Niveles) :-
-    NumElemsAPoner > 1,
-    NumElemsAPoner =< NumTotalNodosDisponibles,
-    generar_nivel(NumTotalNodosDisponibles,Aridad, NumElemsAPoner, Nivel),
-    sumar_nivel(Nivel, NumNodosUsados),
-    NodosRestantes2 is NumTotalNodosDisponibles -NumNodosUsados,
-    ((
-      NodosRestantes2 >= 0,
-      NodosRestantes = NodosRestantes2)
-      ;
-     (NodosRestantes2 < 0,
-      NodosRestantes = 0)
-    ),
-    generar_niveles(NodosRestantes, Aridad, NumNodosUsados, Niveles2),
-    append(Niveles2, Nivel, Niveles).
-*/
 
 
 
@@ -439,50 +322,20 @@ generar_niveles(NumTotalNodosDisponibles, Aridad, NumElemsAPoner, Niveles) :-
 
 
 
-/*
-gen_niveles3(_, _, 0, []) :- !.
-gen_niveles3(0, _, _, []) :- !.
-gen_niveles3(N,R,1,[[X]|Niveles]):-
-    N > 0,
-    genInteger(R,X),
-    N2 is N-X,
-    gen_niveles(N2,R,X,Niveles).
-gen_niveles3(N,R,M,[Nivel]):-
-    N < M,
-    crearNivel(N, R, M, _, Nivel),!.
-gen_niveles3(N,R,M,[Nivel|Niveles]):-
-    N >= M,
-    N2 is R*M,
-    genInteger(N2,X),
-    X > M,
-    crearNivel(X, R, M, M2, Nivel),
-    N3 is N -X,
-    N3 > 0,
-    N4 is N - M + N3,
-    gen_niveles3(N4,R,M2,Niveles).
 
 
 
 
-esqueleto3(N,R,esq(Niveles)) :-
-    gen_niveles3(N,R,1,Niveles).
-*/
-
-generarListaEtiquetas(N,L) :-
-    findall(X,(genInteger(N,X)),L).
-
-%%%
 
 
 
-%%%
-/*
-esqEtiquetables(R, N) :-
-    esqueleto(N, R, Esqueleto),
-    findall(Esqueleto, etiquetamiento(Esqueleto, Arbol), ListaArboles),
-    longitud(ListaArboles, CantArboles),
-    CantArboles > 0.
-*/
+
+
+
+
+
+
+
 
 
 
