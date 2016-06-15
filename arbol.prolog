@@ -45,8 +45,13 @@ etiquetasUnicasNodos(Arbol) :-
     noHayRepetidas(Lista).
 
 
-bienEtiquetado(nodo(_, [])) :-!.
-bienEtiquetado(nodo(EtiquetaNodoPadre, Aristas)) :-
+bienEtiquetado(Arbol) :-
+    bienEtiquetado2(Arbol),
+    etiquetasUnicasAristas(Arbol),
+    etiquetasUnicasNodos(Arbol).
+
+bienEtiquetado2(nodo(_, [])) :-!.
+bienEtiquetado2(nodo(EtiquetaNodoPadre, Aristas)) :-
     cabeza(Aristas, Arista),
     cola(Aristas, RestoAristas),
     extraerEtiquetaDeArista(Arista, EtiquetaArista),
@@ -55,7 +60,7 @@ bienEtiquetado(nodo(EtiquetaNodoPadre, Aristas)) :-
     Diferencia is EtiquetaNodoPadre - EtiquetaNodoHijo, 
     EtiquetaArista is abs(Diferencia),
     bienEtiquetado(NodoHijo),
-    bienEtiquetado(nodo(EtiquetaNodoPadre, RestoAristas)).
+    bienEtiquetado(nodo(EtiquetaNodoPadre, RestoAristas)),!.
 
 longitud([], 0).
 longitud([_ | XS], L) :- longitud(XS, L2), L is L2 + 1,!.
