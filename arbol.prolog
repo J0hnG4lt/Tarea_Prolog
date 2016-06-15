@@ -242,7 +242,7 @@ range(Out,Low,High) :- NewHigh is High-1, Low < NewHigh, range(Out, Low, NewHigh
 
 genInteger(Y,Y).
 genInteger(Y,X) :-
-    Y2 is Y-1, 0 < Y2, genInteger2(Y2,X).
+    Y2 is Y-1, 0 < Y2, genInteger(Y2,X).
 
 
 
@@ -308,8 +308,49 @@ esqueleto3(N,R,esq(Niveles)) :-
     gen_niveles3(N,R,1,Niveles).
 */
 
+generarListaEtiquetas(N,L) :-
+    findall(X,(genInteger(N,X)),L).
+
+%%%
 
 
+
+genArbol(_, nodo(E, []),_,0,[E|ETS],ETS).
+genArbol(esq(Niveles), nodo(E, [arista(0, Hijo) | Aristas]),NumNivel,NumHijos,[E|ETS],ETS3) :-
+    NumHijos > 0,
+    NumNivel >= 0,
+    extraerN_Elem(NumNivel, Niveles, ListaNodosNivelN),
+    longitud(ListaNodosNivelN, LongLista),
+    NumNodosVistosEnNivelNuevo is LongLista -NumHijos,
+    extraerN_Elem(NumNodosVistosEnNivel, ListaNodosNivelN, NumHijosHijo),
+    NumHijos2 is NumHijos -1,
+    NumNivel2 is NumNivel +1,
+    genArbol(esq(Niveles), Hijo,NumNivel2,NumHijosHijo,ETS,ETS2),
+    genArbol(esq(Niveles), Nodo,NumNivel,NumHijos2,[E|ETS2],ETS3),
+    extraerAristas(Nodo, Aristas).
+
+
+
+obtenerCantNodos([],0).
+obtenerCantNodos([Nivel|Niveles], Acum) :-
+    longitud(Nivel, Cant),
+    obtenerCantNodos(Niveles, Acum2),
+    Acum is Cant + Acum2.
+
+construirArbol(esq([[X]|Niveles]), Arbol) :-
+    obtenerCantNodos([[X]|Niveles], N),
+    generarListaEtiquetas(N, Etiquetas),
+    genArbol(esq([[X]|Niveles]), Arbol, 1,X,Etiquetas,_).
+
+construirArboles(esq([[X]|Niveles]), Arbol) :-
+    obtenerCantNodos([[X]|Niveles], N),
+    generarListaEtiquetas(N, Etiquetas),!,
+    permutation(Etiquetas,Etiquetamiento),
+    genArbol(esq([[X]|Niveles]), Arbol, 1,X,Etiquetamiento,_).
+
+extraerAristas(nodo(_, Aristas), Aristas).
+
+%%%
 
 esqEtiquetables(R, N, ListaArboles) :-
     esqueleto(N, R, Esqueleto),
