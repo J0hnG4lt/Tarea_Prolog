@@ -1,3 +1,10 @@
+
+%% Autor: Georvic Tur
+%% Carnet: 12-11402
+%% Correo: alexanderstower@gmail.com
+
+
+
 cola([],[]) :- !.
 cola([_ | XS], XS) :- !.
 
@@ -328,19 +335,20 @@ generarListaEtiquetas(N,L) :-
 
 
 
-genArbol(_, nodo(E, []),_,0,[E|ETS],ETS).
-genArbol(esq(Niveles), nodo(E, [arista(0, Hijo) | Aristas]),NumNivel,NumHijos,[E|ETS],ETS3) :-
+genArbol(_, nodo(E, []),NumNivel,0,[E|ETS],ETS).
+genArbol(esq(Niveles), nodo(E, LA),NumNivel,NumHijos,[E|ETS],ETS3) :-
     NumHijos > 0,
     NumNivel >= 0,
     extraerN_Elem(NumNivel, Niveles, ListaNodosNivelN),
     longitud(ListaNodosNivelN, LongLista),
     NumNodosVistosEnNivelNuevo is LongLista -NumHijos,
-    extraerN_Elem(NumNodosVistosEnNivel, ListaNodosNivelN, NumHijosHijo),
+    extraerN_Elem(NumNodosVistosEnNivel, ListaNodosNivelN, NumHijosHijo),%write(' '),write(NumHijosHijo),nl,
     NumHijos2 is NumHijos -1,
     NumNivel2 is NumNivel +1,
-    genArbol(esq(Niveles), Hijo,NumNivel2,NumHijosHijo,ETS,ETS2),
+    ((genArbol(esq(Niveles), Hijo,NumNivel2,NumHijosHijo,ETS,ETS2),
     genArbol(esq(Niveles), Nodo,NumNivel,NumHijos2,[E|ETS2],ETS3),
-    extraerAristas(Nodo, Aristas).
+    extraerAristas(Nodo, Aristas),
+    LA=[arista(0, Hijo) | Aristas]);(Aristas=[],LA=[])),!.
 
 
 
