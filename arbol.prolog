@@ -1,4 +1,3 @@
-
 %% Autor: Georvic Tur
 %% Carnet: 12-11402
 %% Correo: alexanderstower@gmail.com
@@ -275,53 +274,9 @@ verificarEtiquetables([Esqueleto|Esqueletos]) :-
 %% Quinta Parte: describirEtiquetamiento%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+%Dado un árbol, se imprime su estructura.
 describirEtiquetamiento(Arbol) :-
-    extraerAristas(Arbol, Aristas),
-    longitud(Aristas, Lon),
-    Mitad is Lon//2,
-    printArbol(Arbol, Mitad, 0).
-
-printArbol(nodo(E1,[]), Mitad,NumSpaces1) :-
-    Mitad >= 0,
-    tab(NumSpaces1),
-    write(E1),
-    nl.
-printArbol(nodo(E1,[]), MitadNeg,_) :-
-    MitadNeg < 0.
-printArbol(nodo(E1,[arista(E2,Nodo)|Aristas]), MitadNeg,NumSpaces1) :-
-    MitadNeg < 0,
-    extraerAristas(Nodo, Ars),
-    longitud(Ars, Lon),
-    Mitad2 is Lon//2,
-    NumSpaces2 is NumSpaces1 +4,
-    printArbol(Nodo, Mitad2, NumSpaces2),
-    printArbol(nodo(E1,Aristas), MitadNeg, NumSpaces1).
-printArbol(nodo(E1,[arista(E2,Nodo)|Aristas]), 0,NumSpaces1) :-
-    tab(NumSpaces1),
-    write(E1),
-    nl,
-    extraerAristas(Nodo, Ars),
-    longitud(Ars, Lon),
-    Mitad2 is Lon//2,
-    NumSpaces2 is NumSpaces1 +4,
-    printArbol(Nodo, Mitad2, NumSpaces2),
-    printArbol(nodo(E1,Aristas), -1, NumSpaces1).
-printArbol(nodo(E1,[arista(E2,Nodo)|Aristas]), Mitad,NumSpaces1) :-
-    Mitad > 0,
-    NumSpaces2 is NumSpaces1 + 4,
-    Mitad2 is Mitad -1,
-    extraerAristas(Nodo, Ars),
-    longitud(Ars, Lon),
-    Mit is Lon//2,
-    printArbol(Nodo, Mit, NumSpaces2),
-    printArbol(nodo(E1,Aristas), Mitad2, NumSpaces1).
-
-
-%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%
-
-
-describirEtiquetamiento2(Arbol) :-
     extraerAristas(Arbol, Aristas),
     longitud(Aristas, Lon),
     Mitad is Lon -1,
@@ -334,10 +289,17 @@ describirEtiquetamiento2(Arbol) :-
     write('En cada caso se muestran las etiquetas de los nodos.'),nl,
     write('Las etiquetas de las aristas se muestran así: -E-'),nl,
     write('Se imprime el árbol: '),nl,
-    printArbol2(Arbol, Mitad, 0,''),!.
+    printArbol2(Arbol, M, 0,''),!.
 
-printArbol2(nodo(E1,[]), Mitad,NumSpaces1,EtAr) :-
-    Mitad >= 0,
+
+%Predicado que va recorriendo en DFS el árbol para imprimir las etiquetas.
+% M permite distinguir al caso base de un nodo cuyas aristas se han terminado
+%  de recorrer del caso en el que se ha llegado a un nodo profundo.
+%  Si M es negativo, ocurre el primer caso. Si es positivo, ocurre el segundo.
+% NumSpaces1 permite llevar la indentación correcta al imprimir los niveles.
+% EtAr es la etiqueta del nodo actual.
+printArbol2(nodo(E1,[]), M,NumSpaces1,EtAr) :- % Caso base Nodo profundo
+    M >= 0,
     tab(NumSpaces1),
     write('-'),
     write(EtAr),
@@ -345,8 +307,8 @@ printArbol2(nodo(E1,[]), Mitad,NumSpaces1,EtAr) :-
     write(' '),
     write(E1),
     nl.
-printArbol2(nodo(E1,[]), MitadNeg,NumSpaces1, EtAr) :-
-    MitadNeg < 0,
+printArbol2(nodo(E1,[]), M,NumSpaces1, EtAr) :- % Caso base Aristas recorridas
+    M < 0,
     tab(NumSpaces1),
     write('-'),
     write(EtAr),
@@ -354,30 +316,32 @@ printArbol2(nodo(E1,[]), MitadNeg,NumSpaces1, EtAr) :-
     write(' '),
     write(E1),
     nl.
-printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]), MitadNeg,NumSpaces1, EtAr) :-
-    MitadNeg < 0,
+printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]), M,NumSpaces1, EtAr) :-
+    M < 0,
     extraerAristas(Nodo, Ars),
     longitud(Ars, Lon),
-    Mitad2 is Lon-1,
+    M2 is Lon-1,
     NumSpaces2 is NumSpaces1 +6,
-    printArbol2(Nodo, Mitad2, NumSpaces2, E2),
-    printArbol2(nodo(E1,Aristas), MitadNeg, NumSpaces1, EtAr).
+    printArbol2(Nodo, M2, NumSpaces2, E2),
+    printArbol2(nodo(E1,Aristas), M, NumSpaces1, EtAr).
 printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]), 0,NumSpaces1, EtAr) :-
     extraerAristas(Nodo, Ars),
     longitud(Ars, Lon),
-    Mitad2 is Lon-1,
+    M2 is Lon-1,
     NumSpaces2 is NumSpaces1 +6,
-    printArbol2(Nodo, Mitad2, NumSpaces2, E1),
+    printArbol2(Nodo, M2, NumSpaces2, E1),
     printArbol2(nodo(E1,Aristas), -1, NumSpaces1, EtAr).
-printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]), Mitad,NumSpaces1, EtAr) :-
-    Mitad > 0,
+printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]), M,NumSpaces1, EtAr) :-
+    M > 0,
     NumSpaces2 is NumSpaces1 + 6,
-    Mitad2 is Mitad -1,
+    M2 is M -1,
     extraerAristas(Nodo, Ars),
     longitud(Ars, Lon),
     Mit is Lon -1,
     printArbol2(Nodo, Mit, NumSpaces2, E2),
-    printArbol2(nodo(E1,Aristas), Mitad2, NumSpaces1, EtAr).
+    printArbol2(nodo(E1,Aristas), M2, NumSpaces1, EtAr).
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Predicados Auxiliares %%
