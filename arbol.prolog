@@ -200,7 +200,7 @@ construirArboles(esq([[X]|Niveles]), Arbol) :-
     obtenerCantNodos([[X]|Niveles], N), % Cantidad Total de Nodos
     generarListaEtiquetas(N, Etiquetas),!, % Lista de Etiquetas
     permutation(Etiquetas,Etiquetamiento), % Variaciones para cada arbol
-    genArbol(esq([[X]|Niveles]), Arbol2, 1,X,Etiquetamiento,_),
+    genArbol(esq([[X]|Niveles]), Arbol2, 1,X,Etiquetamiento,_), % Arbol con aristas no etiquetadas
     calcularAristas(Arbol2, Arbol). % Se computan las etiquetas de las aristas
 
 % Auxiliar
@@ -244,7 +244,7 @@ obtenerCantNodos([Nivel|Niveles], Acum) :-
 
 
 % Dado un arbol de nodos etiquetados, se calculan las etiquetas de las aristas.
-calcularAristas(nodo(E,[]),nodo(E,[])).
+calcularAristas(nodo(E,[]),nodo(E,[])). % El arbol de argumento es genérico.
 calcularAristas(nodo(E1,[arista(_,Nodo)|Aristas]), nodo(E1, [arista(E2,Nodo2)|Aristas2])) :-
     extraerEtiquetaDeNodo(Nodo, E3),
     E2 is abs(E1-E3),
@@ -262,7 +262,8 @@ calcularAristas(nodo(E1,[arista(_,Nodo)|Aristas]), nodo(E1, [arista(E2,Nodo2)|Ar
 % True si todos los esqueletos de N nodos y Aridad R son bien etiquetables
 esqEtiquetables(R, N) :-
     findall(Esqueleto, esqueleto(N, R, Esqueleto), Esqueletos),
-    verificarEtiquetables(Esqueletos).
+    verificarEtiquetables(Esqueletos). % Para todo esqueleto debe existir un etiquetamiento
+
 
 % Se verifica para todos los esqueletos que exista un arbol bien etiquetado
 % que sea equivalente
@@ -307,44 +308,29 @@ printArbol2(nodo(E1,[]), M,NumSpaces1,EtAr) :- % Caso base Nodo profundo
     M >= 0,
     tab(NumSpaces1),
     write('-'),
-    write(EtAr),
+    write(EtAr), % Etiqueta Arista
     write('-'),
     write(' '),
-    write(E1),
+    write(E1), % Etiqueta Nodo
     nl.
 printArbol2(nodo(E1,[]),M ,NumSpaces1, EtAr) :- % Caso base Aristas recorridas
     M < 0,
     tab(NumSpaces1),
     write('-'),
-    write(EtAr),
+    write(EtAr), % Etiqueta Arista
     write('-'),
     write(' '),
-    write(E1),
+    write(E1), % Etiqueta Nodo
     nl.
-printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]),M ,NumSpaces1, EtAr) :-
-    M < 0,
-    extraerAristas(Nodo, Ars),
-    longitud(Ars, Lon),
-    M2 is Lon-1,
-    NumSpaces2 is NumSpaces1 +6,
-    printArbol2(Nodo, M2, NumSpaces2, E2),
-    printArbol2(nodo(E1,Aristas), M, NumSpaces1, EtAr).
-printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]), 0,NumSpaces1, EtAr) :-
-    extraerAristas(Nodo, Ars),
-    longitud(Ars, Lon),
-    M2 is Lon-1,
-    NumSpaces2 is NumSpaces1 +6,
-    printArbol2(Nodo, M2, NumSpaces2, E2),
-    printArbol2(nodo(E1,Aristas), -1, NumSpaces1, EtAr).
-printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]),M ,NumSpaces1, EtAr) :-
-    M > 0,
+printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]),M ,NumSpaces1, EtAr) :- 
+    M >= 0, % Se están recorriendo las aristas
     NumSpaces2 is NumSpaces1 + 6,
-    M2 is M -1,
-    extraerAristas(Nodo, Ars),
+    M2 is M -1, % Pues ya se ha visto una arista
+    extraerAristas(Nodo, Ars), % Se cuenta la cantidad de hijos para bajar de nivel
     longitud(Ars, Lon),
-    Mit is Lon -1,
-    printArbol2(Nodo, Mit, NumSpaces2, E2),
-    printArbol2(nodo(E1,Aristas), M2, NumSpaces1, EtAr).
+    Mit is Lon -1, % Así se asegura que sea negativo al terminar de examinar las aristas
+    printArbol2(Nodo, Mit, NumSpaces2, E2), % Bajo de nivel
+    printArbol2(nodo(E1,Aristas), M2, NumSpaces1, EtAr). % Continúo al nodo vecino
 
 
 
