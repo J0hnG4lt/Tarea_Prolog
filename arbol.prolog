@@ -25,8 +25,8 @@ bienEtiquetado2(nodo(EtiquetaNodoPadre, Aristas)) :-
     extraerEtiquetaDeNodo(NodoHijo, EtiquetaNodoHijo),
     Diferencia is EtiquetaNodoPadre - EtiquetaNodoHijo, 
     EtiquetaArista is abs(Diferencia),
-    bienEtiquetado(NodoHijo),
-    bienEtiquetado(nodo(EtiquetaNodoPadre, RestoAristas)),!.
+    bienEtiquetado2(NodoHijo),
+    bienEtiquetado2(nodo(EtiquetaNodoPadre, RestoAristas)),!.
 
 
 etiquetasUnicasAristas(Arbol) :-
@@ -279,7 +279,7 @@ verificarEtiquetables([Esqueleto|Esqueletos]) :-
 describirEtiquetamiento(Arbol) :-
     extraerAristas(Arbol, Aristas),
     longitud(Aristas, Lon),
-    Mitad is Lon -1,
+    M is Lon -1,
     write('Los hijos de un nodo se encuentran a su derecha, arriba del mismo, '),
     write('hasta que se encuentre otro nodo en la misma columna del padre. '),
     write('Los nodos de arriba que también estén arriba de otro nodo en la '),
@@ -307,7 +307,7 @@ printArbol2(nodo(E1,[]), M,NumSpaces1,EtAr) :- % Caso base Nodo profundo
     write(' '),
     write(E1),
     nl.
-printArbol2(nodo(E1,[]), M,NumSpaces1, EtAr) :- % Caso base Aristas recorridas
+printArbol2(nodo(E1,[]),M ,NumSpaces1, EtAr) :- % Caso base Aristas recorridas
     M < 0,
     tab(NumSpaces1),
     write('-'),
@@ -316,7 +316,7 @@ printArbol2(nodo(E1,[]), M,NumSpaces1, EtAr) :- % Caso base Aristas recorridas
     write(' '),
     write(E1),
     nl.
-printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]), M,NumSpaces1, EtAr) :-
+printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]),M ,NumSpaces1, EtAr) :-
     M < 0,
     extraerAristas(Nodo, Ars),
     longitud(Ars, Lon),
@@ -329,9 +329,9 @@ printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]), 0,NumSpaces1, EtAr) :-
     longitud(Ars, Lon),
     M2 is Lon-1,
     NumSpaces2 is NumSpaces1 +6,
-    printArbol2(Nodo, M2, NumSpaces2, E1),
+    printArbol2(Nodo, M2, NumSpaces2, E2),
     printArbol2(nodo(E1,Aristas), -1, NumSpaces1, EtAr).
-printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]), M,NumSpaces1, EtAr) :-
+printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]),M ,NumSpaces1, EtAr) :-
     M > 0,
     NumSpaces2 is NumSpaces1 + 6,
     M2 is M -1,
