@@ -18,6 +18,7 @@ bienEtiquetado(Arbol) :-
 %con las etiquetas de las aristas
 bienEtiquetado2(nodo(_, [])) :-!.
 bienEtiquetado2(nodo(EtiquetaNodoPadre, Aristas)) :-
+    integer(EtiquetaNodoPadre),
     cabeza(Aristas, Arista),
     cola(Aristas, RestoAristas),
     extraerEtiquetaDeArista(Arista, EtiquetaArista),
@@ -71,6 +72,8 @@ noHayRepetidas([X|XS]) :-
 % True si E es un esqueleto de N nodos y aridad R
 % Se generan todas las posibilidades de E dados N y R
 esqueleto(N,R,E) :- 
+    integer(N),
+    integer(R),
     setof(X,(esqueleto2(N,R,X)),L2), %Se descartan repetidos
     buenosEsqueletos(L2, L), !, %Han de estar bien definidos
     member(E,L). % Se generan las posibilidades
@@ -214,8 +217,10 @@ generarListaEtiquetas(N,L) :-
 % La salida es el segundo campo y el ultimo.
 % Dado un esqueleto, el numero de nivel actual, numero de hijos y lista
 % de etiquetas, se genera un arbol junto con la lista de etiquetas sobrantes.
-genArbol(_, nodo(E, []),NumNivel,0,[E|ETS],ETS). % Caso Base
+genArbol(_, nodo(E, []),NumNivel,0,[E],[]) :- integer(E). % Caso Base
+genArbol(_, nodo(E, []),NumNivel,0,[E|ETS],ETS) :- integer(E). % Caso Base
 genArbol(esq(Niveles), nodo(E, LA),NumNivel,NumHijos,[E|ETS],ETS3) :-
+    integer(E),
     NumHijos > 0,
     NumNivel >= 0,
     extraerN_Elem(NumNivel, Niveles, ListaNodosNivelN),
