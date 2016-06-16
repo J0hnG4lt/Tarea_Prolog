@@ -275,6 +275,109 @@ verificarEtiquetables([Esqueleto|Esqueletos]) :-
 %% Quinta Parte: describirEtiquetamiento%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+describirEtiquetamiento(Arbol) :-
+    extraerAristas(Arbol, Aristas),
+    longitud(Aristas, Lon),
+    Mitad is Lon//2,
+    printArbol(Arbol, Mitad, 0).
+
+printArbol(nodo(E1,[]), Mitad,NumSpaces1) :-
+    Mitad >= 0,
+    tab(NumSpaces1),
+    write(E1),
+    nl.
+printArbol(nodo(E1,[]), MitadNeg,_) :-
+    MitadNeg < 0.
+printArbol(nodo(E1,[arista(E2,Nodo)|Aristas]), MitadNeg,NumSpaces1) :-
+    MitadNeg < 0,
+    extraerAristas(Nodo, Ars),
+    longitud(Ars, Lon),
+    Mitad2 is Lon//2,
+    NumSpaces2 is NumSpaces1 +4,
+    printArbol(Nodo, Mitad2, NumSpaces2),
+    printArbol(nodo(E1,Aristas), MitadNeg, NumSpaces1).
+printArbol(nodo(E1,[arista(E2,Nodo)|Aristas]), 0,NumSpaces1) :-
+    tab(NumSpaces1),
+    write(E1),
+    nl,
+    extraerAristas(Nodo, Ars),
+    longitud(Ars, Lon),
+    Mitad2 is Lon//2,
+    NumSpaces2 is NumSpaces1 +4,
+    printArbol(Nodo, Mitad2, NumSpaces2),
+    printArbol(nodo(E1,Aristas), -1, NumSpaces1).
+printArbol(nodo(E1,[arista(E2,Nodo)|Aristas]), Mitad,NumSpaces1) :-
+    Mitad > 0,
+    NumSpaces2 is NumSpaces1 + 4,
+    Mitad2 is Mitad -1,
+    extraerAristas(Nodo, Ars),
+    longitud(Ars, Lon),
+    Mit is Lon//2,
+    printArbol(Nodo, Mit, NumSpaces2),
+    printArbol(nodo(E1,Aristas), Mitad2, NumSpaces1).
+
+
+%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%
+
+
+describirEtiquetamiento2(Arbol) :-
+    extraerAristas(Arbol, Aristas),
+    longitud(Aristas, Lon),
+    Mitad is Lon -1,
+    write('Los hijos de un nodo se encuentran a su derecha, arriba del mismo, '),
+    write('hasta que se encuentre otro nodo en la misma columna del padre. '),
+    write('Los nodos de arriba que también estén arriba de otro nodo en la '),
+    write('misma columna del padre no son hijos del nodo actual, sino del superior.'),nl,
+    write('Los nodos del mismo nivel están en una misma columna.'),nl,
+    write('La raíz está marcada con --'),nl,
+    write('En cada caso se muestran las etiquetas de los nodos.'),nl,
+    write('Las etiquetas de las aristas se muestran así: -E-'),nl,
+    write('Se imprime el árbol: '),nl,
+    printArbol2(Arbol, Mitad, 0,''),!.
+
+printArbol2(nodo(E1,[]), Mitad,NumSpaces1,EtAr) :-
+    Mitad >= 0,
+    tab(NumSpaces1),
+    write('-'),
+    write(EtAr),
+    write('-'),
+    write(' '),
+    write(E1),
+    nl.
+printArbol2(nodo(E1,[]), MitadNeg,NumSpaces1, EtAr) :-
+    MitadNeg < 0,
+    tab(NumSpaces1),
+    write('-'),
+    write(EtAr),
+    write('-'),
+    write(' '),
+    write(E1),
+    nl.
+printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]), MitadNeg,NumSpaces1, EtAr) :-
+    MitadNeg < 0,
+    extraerAristas(Nodo, Ars),
+    longitud(Ars, Lon),
+    Mitad2 is Lon-1,
+    NumSpaces2 is NumSpaces1 +6,
+    printArbol2(Nodo, Mitad2, NumSpaces2, E2),
+    printArbol2(nodo(E1,Aristas), MitadNeg, NumSpaces1, EtAr).
+printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]), 0,NumSpaces1, EtAr) :-
+    extraerAristas(Nodo, Ars),
+    longitud(Ars, Lon),
+    Mitad2 is Lon-1,
+    NumSpaces2 is NumSpaces1 +6,
+    printArbol2(Nodo, Mitad2, NumSpaces2, E1),
+    printArbol2(nodo(E1,Aristas), -1, NumSpaces1, EtAr).
+printArbol2(nodo(E1,[arista(E2,Nodo)|Aristas]), Mitad,NumSpaces1, EtAr) :-
+    Mitad > 0,
+    NumSpaces2 is NumSpaces1 + 6,
+    Mitad2 is Mitad -1,
+    extraerAristas(Nodo, Ars),
+    longitud(Ars, Lon),
+    Mit is Lon -1,
+    printArbol2(Nodo, Mit, NumSpaces2, E2),
+    printArbol2(nodo(E1,Aristas), Mitad2, NumSpaces1, EtAr).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Predicados Auxiliares %%
@@ -304,33 +407,6 @@ extraerN_Elem(0, [X | _], X) :- !.
 extraerN_Elem(Numero, [_ | XS], R) :- 
     Numero_2 is Numero - 1,
     extraerN_Elem(Numero_2, XS, R), !.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
